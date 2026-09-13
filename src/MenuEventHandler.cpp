@@ -102,6 +102,10 @@ namespace VrikInventorySelfie {
 						if (verbose) {
 							SKSE::log::info("entering tween menu but no related menu displays body - skipping selfie lock entirely.");
 						}
+					else if (menuName != "TweenMenu" && menuName != "InventoryMenu" && menuName != "ContainerMenu" && menuName != "BarterMenu" && menuName != "MagicMenu")  {
+						if (verbose) {
+							SKSE::log::info("entering an unrelated menu - skipping selfie lock entirely.");
+						}
 					}
 					else {
 						auto player = RE::PlayerCharacter::GetSingleton();
