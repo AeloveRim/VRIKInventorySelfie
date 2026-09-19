@@ -1,6 +1,7 @@
 #include "MenuEventHandler.h"
 #include "vrikinterface001.h"
 #include "Config.h"
+#include "PapyrusDispatch.h"
 
 #include <cmath>
 #include <chrono>
@@ -25,6 +26,25 @@ namespace VrikInventorySelfie {
 		"Training Menu",
 		"Tutorial Menu"
 	};
+
+	namespace {
+		void FixHdtSmpStretchingIfEnabled(bool verbose) {
+			auto config = Config::GetSingleton();
+			if (!config->GetFixHdtSmpStretching()) {
+				return;
+			}
+
+			auto player = RE::PlayerCharacter::GetSingleton();
+			if (!player) {
+				return;
+			}
+
+			bool dispatched = PapyrusDispatch::DispatchStaticCall("DynamicHDT", "ResetPhysics", static_cast<RE::Actor*>(player), true);
+			if (verbose) {
+				SKSE::log::info("HDT SMP ResetPhysics dispatch {}", dispatched ? "succeeded" : "failed (HDT SMP likely not installed)");
+			}
+		}
+	}
 
 	void MenuEventHandler::Register() {
 		auto ui = RE::UI::GetSingleton();
@@ -175,6 +195,8 @@ namespace VrikInventorySelfie {
 									vrik->getSettingDouble("lockRotation"),
 									vrik->getSettingDouble("lockRotationAngle"));
 								}
+
+								FixHdtSmpStretchingIfEnabled(verbose);
 						}
 					}
 				}
@@ -223,6 +245,9 @@ namespace VrikInventorySelfie {
 								SKSE::log::info("Re-pointed VRIK lock at live position/angle before final unlock: X={}, Y={}, Z={}, Rot={}",
 									px, py, pz, currentAngleDeg);
 							}
+
+
+							FixHdtSmpStretchingIfEnabled(verbose);
 						}
 
 						int delayMs = config->GetUnlockDelayMs();
