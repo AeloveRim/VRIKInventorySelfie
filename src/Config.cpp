@@ -73,8 +73,10 @@ namespace VrikInventorySelfie {
 		bodyVisibleInContainer = ReadBool("BodyVisibility", "Container", false, iniPath);
 		bodyVisibleInBarter = ReadBool("BodyVisibility", "Barter", false, iniPath);
 
-		SKSE::log::info("Loaded Config: Distance = {}, HeightOffset = {}, Horizontality = {}, RotationOffset = {}, VerboseLogging = {}, DebugMode = {}, UnlockDelayMs = {}",
-			distance, heightOffset, horizontality, rotationOffset, verboseLogging ? 1 : 0, debugMode ? 1 : 0, unlockDelayMs);
+		fixHdtSmpStretching = ReadBool("General", "FixHdtSmpStretching", true, iniPath);
+
+		SKSE::log::info("Loaded Config: Distance = {}, HeightOffset = {}, Horizontality = {}, RotationOffset = {}, VerboseLogging = {}, DebugMode = {}, UnlockDelayMs = {}, FixHdtSmpStretching = {}",
+			distance, heightOffset, horizontality, rotationOffset, verboseLogging ? 1 : 0, debugMode ? 1 : 0, unlockDelayMs, fixHdtSmpStretching ? 1 : 0);
 		SKSE::log::info("Loaded Config: BodyVisibility Tween={} Inventory={} Magic={} Container={} Barter={}",
 			bodyVisibleInTween ? 1 : 0, bodyVisibleInInventory ? 1 : 0, bodyVisibleInMagic ? 1 : 0,
 			bodyVisibleInContainer ? 1 : 0, bodyVisibleInBarter ? 1 : 0);
