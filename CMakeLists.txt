@@ -27,6 +27,7 @@ add_commonlibsse_plugin(${PROJECT_NAME}
         src/Main.cpp
         src/MenuEventHandler.cpp
         src/MenuEventHandler.h
+        src/PapyrusDispatch.h
         src/vrikinterface001.cpp
         src/vrikinterface001.h
 )
