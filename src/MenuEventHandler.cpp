@@ -6,6 +6,7 @@
 #include <cmath>
 #include <chrono>
 #include <thread>
+#include <Windows.h>
 
 namespace VrikInventorySelfie {
 
@@ -28,9 +29,28 @@ namespace VrikInventorySelfie {
 	};
 
 	namespace {
+		bool IsHdtSmpLoaded() {
+			static const bool loaded = (GetModuleHandleA("hdtSMP64.dll") != nullptr);
+			return loaded;
+		}
+
+		void RunConsoleCommand(std::string_view command) {
+			const auto factory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+			const auto script = factory ? factory->Create() : nullptr;
+			if (!script) {
+				return;
+			}
+			script->SetCommand(command);
+			script->CompileAndRun(RE::PlayerCharacter::GetSingleton());
+			delete script;
+		}
+
 		void FixHdtSmpStretchingIfEnabled(bool verbose) {
 			auto config = Config::GetSingleton();
 			if (!config->GetFixHdtSmpStretching()) {
+				return;
+			}
+			if (!IsHdtSmpLoaded()) {
 				return;
 			}
 
@@ -41,7 +61,7 @@ namespace VrikInventorySelfie {
 
 			bool dispatched = PapyrusDispatch::DispatchStaticCall("DynamicHDT", "ResetPhysics", static_cast<RE::Actor*>(player), true);
 			if (verbose) {
-				SKSE::log::info("HDT SMP ResetPhysics dispatch {}", dispatched ? "succeeded" : "failed (HDT SMP likely not installed)");
+				SKSE::log::info("HDT SMP ResetPhysics dispatch {}", dispatched ? "succeeded" : "failed (hdtSMP64.dll is loaded, but the DynamicHDT.ResetPhysics call itself failed)");
 			}
 		}
 	}
@@ -197,6 +217,28 @@ namespace VrikInventorySelfie {
 								}
 
 								FixHdtSmpStretchingIfEnabled(verbose);
+								const int fullResetDelayMs = config->GetSmpFullResetDelayMs();
+								if (verbose) {
+									auto ui = RE::UI::GetSingleton();
+									SKSE::log::info("Locked body. Game paused at lock time: {}", ui && ui->GameIsPaused());
+								}
+								if (fullResetDelayMs > 0 && IsHdtSmpLoaded()) {
+									const int expectedGeneration = lockGeneration.load();
+									std::thread([this, fullResetDelayMs, verbose, expectedGeneration]() {
+										std::this_thread::sleep_for(std::chrono::milliseconds(fullResetDelayMs));
+										SKSE::GetTaskInterface()->AddTask([this, verbose, expectedGeneration, fullResetDelayMs]() {
+											if (!wasLockedForMenu || lockGeneration.load() != expectedGeneration) {
+												return;
+											}
+											RunConsoleCommand("smp reset");
+											if (verbose) {
+												auto ui = RE::UI::GetSingleton();
+												SKSE::log::info("Ran delayed 'smp reset' {}ms after lock. Game paused at that point: {}",
+													fullResetDelayMs, ui && ui->GameIsPaused());
+											}
+										});
+									}).detach();
+								}
 						}
 					}
 				}
