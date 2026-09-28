@@ -31,6 +31,7 @@ namespace VrikInventorySelfie {
 		bool GetBodyVisibleInContainer() const { return bodyVisibleInContainer; }
 		bool GetBodyVisibleInBarter() const { return bodyVisibleInBarter; }
 		bool GetFixHdtSmpStretching() const { return fixHdtSmpStretching; }
+		int GetSmpFullResetDelayMs() const { return smpFullResetDelayMs; }
 
 		float distance = 90.0f;
 
@@ -52,7 +53,8 @@ namespace VrikInventorySelfie {
 		bool bodyVisibleInContainer = false;
 		bool bodyVisibleInBarter = false;
 		bool fixHdtSmpStretching = true;
-
+		int smpFullResetDelayMs = 0;
+		
 		// Path passed to the last LoadConfig() call, remembered so Reload()
 		// knows where to re-read from.
 		std::string lastLoadedPath;
