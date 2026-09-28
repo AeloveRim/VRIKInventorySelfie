@@ -75,8 +75,14 @@ namespace VrikInventorySelfie {
 
 		fixHdtSmpStretching = ReadBool("General", "FixHdtSmpStretching", true, iniPath);
 
-		SKSE::log::info("Loaded Config: Distance = {}, HeightOffset = {}, Horizontality = {}, RotationOffset = {}, VerboseLogging = {}, DebugMode = {}, UnlockDelayMs = {}, FixHdtSmpStretching = {}",
-			distance, heightOffset, horizontality, rotationOffset, verboseLogging ? 1 : 0, debugMode ? 1 : 0, unlockDelayMs, fixHdtSmpStretching ? 1 : 0);
+		if (GetPrivateProfileStringA("General", "SmpFullResetDelayMs", "0", buffer, sizeof(buffer), iniPath.c_str()) > 0) {
+			try {
+				smpFullResetDelayMs = std::stoi(buffer);
+			} catch (...) {}
+		}
+
+		SKSE::log::info("Loaded Config: Distance = {}, HeightOffset = {}, Horizontality = {}, RotationOffset = {}, VerboseLogging = {}, DebugMode = {}, UnlockDelayMs = {}, FixHdtSmpStretching = {}, SmpFullResetDelayMs = {}",
+			distance, heightOffset, horizontality, rotationOffset, verboseLogging ? 1 : 0, debugMode ? 1 : 0, unlockDelayMs, fixHdtSmpStretching ? 1 : 0, smpFullResetDelayMs);
 		SKSE::log::info("Loaded Config: BodyVisibility Tween={} Inventory={} Magic={} Container={} Barter={}",
 			bodyVisibleInTween ? 1 : 0, bodyVisibleInInventory ? 1 : 0, bodyVisibleInMagic ? 1 : 0,
 			bodyVisibleInContainer ? 1 : 0, bodyVisibleInBarter ? 1 : 0);
