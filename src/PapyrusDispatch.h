@@ -31,14 +31,14 @@ namespace PapyrusDispatch {
 	// HDT SMP, isn't installed/loaded). This does not throw or crash on a
 	// missing class/function; it's a normal, checked failure path.
 	template <class... TArgs>
-	inline bool DispatchStaticCall(const RE::BSFixedString& a_class, const RE::BSFixedString& a_fnName, TArgs&&... a_args) {
+	inline bool DispatchStaticCall(const RE::BSFixedString& a_class, const RE::BSFixedString& a_fnName, TArgs... a_args) {
 		auto vm = VM::GetSingleton();
 		if (!vm) {
 			return false;
 		}
 
 		CallbackPtr nullCallback;  // fire-and-forget: no return-value handling
-		auto* args = RE::MakeFunctionArguments(std::forward<TArgs>(a_args)...);
+		auto* args = RE::MakeFunctionArguments(std::move(a_args)...);
 		return vm->DispatchStaticCall(a_class, a_fnName, args, nullCallback);
 	}
 }
