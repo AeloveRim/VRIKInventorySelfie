@@ -40,11 +40,23 @@ namespace VrikInventorySelfie {
 			if (!script) {
 				return;
 			}
-			script->SetCommand(command);
-			script->CompileAndRun(RE::PlayerCharacter::GetSingleton());
+			
+			__try {
+				script->SetCommand(command);
+				script->CompileAndRun(RE::PlayerCharacter::GetSingleton());
+			} __except (EXCEPTION_EXECUTE_HANDLER) {
+			}
 			delete script;
 		}
-
+		
+		bool TryDispatchHdtSmpResetSEH(const RE::BSFixedString& a_class, const RE::BSFixedString& a_fn, RE::Actor* player, bool full) {
+			__try {
+				return PapyrusDispatch::DispatchStaticCall(a_class, a_fn, player, full);
+			} __except (EXCEPTION_EXECUTE_HANDLER) {
+				return false;
+			}
+		}
+		
 		void FixHdtSmpStretchingIfEnabled(bool verbose) {
 			auto config = Config::GetSingleton();
 			if (!config->GetFixHdtSmpStretching()) {
@@ -59,9 +71,12 @@ namespace VrikInventorySelfie {
 				return;
 			}
 
-			bool dispatched = PapyrusDispatch::DispatchStaticCall("DynamicHDT", "ResetPhysics", static_cast<RE::Actor*>(player), true);
+
+			static const RE::BSFixedString kDynamicHdtClass{ "DynamicHDT" };
+			static const RE::BSFixedString kResetPhysicsFn{ "ResetPhysics" };
+			bool dispatched = TryDispatchHdtSmpResetSEH(kDynamicHdtClass, kResetPhysicsFn, static_cast<RE::Actor*>(player), true);
 			if (verbose) {
-				SKSE::log::info("HDT SMP ResetPhysics dispatch {}", dispatched ? "succeeded" : "failed (hdtSMP64.dll is loaded, but the DynamicHDT.ResetPhysics call itself failed)");
+				SKSE::log::info("HDT SMP ResetPhysics dispatch {}", dispatched ? "succeeded" : "failed (hdtSMP64.dll is loaded, but the call itself failed or was caught by the crash guard)");
 			}
 		}
 	}
